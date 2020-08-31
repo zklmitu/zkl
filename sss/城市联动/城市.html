@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        #searchBox {
+            width: 500px;
+            border: 1px solid rebeccapurple;
+            margin: 50px 200px;
+        }
+
+        input {
+            width: 500px;
+            height: 30px;
+        }
+
+        li {
+            list-style: none;
+            line-height: 30px;
+            height: 30px;
+            width: 100%;
+        }
+
+        li:hover {
+            background-color: #808080;
+        }
+    </style>
+</head>
+
+<body>
+    <select name="" id="shen"></select>
+    <select name="" id="shi"></select>
+    <select name="" id="qu"></select>
+</body>
+
+</html>
+<script src="ajax.js"></script>
+<script src="citys.json"></script>
+
+<script>
+    ajax(
+        'GET',
+        'citys.json',
+        null,
+        function (data) {
+
+            ani = JSON.parse(data)
+            console.log(ani);
+
+            shujin(ani)
+        }
+    )
+    let shen = document.getElementById("shen")
+    let shi = document.getElementById("name")
+    let qu = document.getElementById("area")
+
+
+
+
+
+    function shujin(ani) {
+        for (let j = 0; j < ani.length; j++) {
+            shen.innerHTML += `
+                    <option>${ani[j].name}</option>
+                    `
+        }
+        if (j==0) {
+            let firsp = ani[j].name;
+            for (let k = 0; k < firsp.length; k++) {
+                shi.innerHTML += `
+                    <option>${ani[k].name}</option>
+                 `
+                if (k == 0) {
+                    let quval = firsp[k].qu;
+                    for (let m = 0; m < quval.length; m++) {
+                        qu.innerHTML += `
+                         <option>${ani[m].area}</option>
+                         `
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
+
+</script>
