@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<style type="text/css">
+			* {
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				background-color: #000;
+			}
+
+			h1 {
+				color: #fff;
+				text-align: center;
+				margin-top: 30px;
+			}
+
+			#con div {
+				color: #fff;
+				float: left;
+			}
+
+			#score {
+				width: 100px;
+				height: 30px;
+			}
+
+			#con {
+				position: relative;
+				height: 30px;
+				margin: 10px auto;
+				background: url(../../img/timg1.jpg);
+				width: 600px;
+				height: 375px;
+				background-size: cover;
+			}
+
+			.guihuo {
+				position: absolute;
+				background: url(../../img/guihuo.gif);
+				background-size: cover;
+				width: 32px;
+				height: 77px;
+			}
+
+			.mogui {
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				background: url(../../img/mg.gif);
+				background-size: cover;
+				width: 120px;
+				height: 120px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>鬼火终结者</h1>
+		<div id="con">
+			<div id="score">积分：<span id="spanScore">0</span></div>
+			<div id="time">倒计时：<span id="spanTimer">20</span>s</div>
+			<!-- <div class="guihuo"></div> -->
+			<div class="mogui"></div>
+		</div>
+	</body>
+</html>
+
+<script>
+	
+	 //  600   375     32   77       120   120
+	//游戏对象
+	let Game = {
+		//定义鬼火的数量
+		ghLen: 10,
+		oCon:null,  //内容div 
+		oMG:null,
+		UP:38,
+		LEFT:37,
+		aGH:[],
+		score:0,
+		speed:100,
+
+		//init表示初始化的意思
+		init: function() {
+			this.oCon = document.querySelector("#con");
+			//初始化鬼火
+			this.initGH();
+			//初始化魔鬼的移动
+			this.oMG = document.querySelector(".mogui");
+			//初始化魔鬼的移动操作
+			this.initMove();
+			//初始化定时器
+			this.initTimer()
+			
+		},
+		//写一个定时器，把时间递减。
+		initTimer:function(){
+			let o = setInterval(function(){
+				let st = document.querySelector("#spanTimer");
+				let stCon = parseInt(st.innerHTML);
+				stCon--;
+				st.innerHTML = stCon;
+				if(stCon <= 0){
+					alert("挑战失败")
+					clearInterval(o)
+					location.reload();
+				}
+			},200)
+			
+		},
+		initGH: function() {
+			//生成很多的鬼火，放到页面上
+			console.log("initGH");
+			for (let i = 0; i < this.ghLen; i++) {
+				let ghDiv = document.createElement("div");
+				<!-- <div class="guihuo"></div> -->
+				ghDiv.classList.add("guihuo")
+				//定位
+				ghDiv.style.left = this.myRandom(0, 600-32) + "px"
+				ghDiv.style.top = this.myRandom(30,375-77) + "px"
+				
+				//把生成的鬼火追加到页面上
+				this.oCon.appendChild(ghDiv);
+				this.aGH.push(ghDiv)
+				
+
+			}
+		},
+		//获取两个数字中间的随机整数就可以了
+		myRandom:function(a,b){
+			return Math.floor(Math.random()*(b-a)+a);   //  0-1      10         ()0  -   10) + 50
+			
+		},
+		initMove:function(){
+			//为整个document都绑定监听按钮事件
+			//判断上下左右，让魔鬼做出对应的移动  此处this表示game
+			let This = this;
+			document.onkeydown=function(e){
+				//此处this表示document
+				if(e.keyCode == Game.LEFT){
+					//左
+					let left = This.oMG.offsetLeft;
+					if(left > 0){
+						left = (left - This.speed) + "px";
+					}
+					This.oMG.style.left = left;
+				}else if(e.keyCode == Game.UP){
+					//上
+					let top = This.oMG.offsetTop;
+					if(top >= 30){
+						top = (top - This.speed) + "px";
+					}
+					This.oMG.style.top = top;
+				}else if(e.keyCode == 39){
+					//右
+					let right = This.oMG.offsetLeft;
+					if(right <= This.oCon.clientWidth - This.oMG.clientWidth){
+						right = (right + This.speed) + "px"
+					}
+					This.oMG.style.left = right;
+				}else if(e.keyCode == 40){
+					//下
+					let bottom = This.oMG.offsetTop;
+					if(bottom < This.oCon.clientHeight - This.oMG.clientHeight){
+						bottom = bottom + This.speed + "px";
+					}
+					This.oMG.style.top = bottom;
+				}
+				
+				//移动结束，要判断有没有碰上(要判断当前div和其他所有的鬼火div有没有碰上)
+				for(let i=0;i<This.aGH.length;i++){
+					//判断是否碰撞
+					if(This.pz(This.oMG,This.aGH[i])){
+						//吃掉鬼火   --    页面上删除该鬼火div     --    剩余鬼火数量-1      --    积分要加1
+						This.oCon.removeChild(This.aGH[i]);
+						// This.aGH.splice(i,1);
+						// console.log(This.aGH);
+						//假设每次只碰上1个
+						// break;
+						//积分增加
+						This.score++
+						//同步到页面上去
+						document.querySelector("#spanScore").innerHTML=This.score
+						
+						//如果清除完毕，弹窗表示
+						if(This.score % 10 == 0){
+							alert("恭喜过关！")
+							location.reload();   //怎么把分数弄过去
+						}
+					}
+				}
+			}
+		},
+		//检测碰撞的,装上了返回true，没撞上返回false
+		pz:function(a,b){
+			//获取a各个方向距离
+			let L1 = a.offsetLeft;
+			let T1 = a.offsetTop;
+			let R1 = this.oCon.clientWidth-L1-a.clientWidth;
+			let B1 = this.oCon.clientHeight-T1-a.clientHeight;
+			//获取b各个方向距离
+			let L2 = b.offsetLeft;
+			let T2 = b.offsetTop;
+			let R2 = this.oCon.clientWidth-L2-b.clientWidth;
+			let B2 = this.oCon.clientHeight-T2-b.clientHeight;
+			
+			//判断是否撞上
+			if(L1+a.clientWidth<L2 || T1 + a.clientHeight < T2 || R1 + a.clientWidth < R2 || B1 + a.clientHeight < B2){
+					//没碰上
+				return false;
+			}else{
+				//一定碰上了
+				return true;
+			}
+		}
+	}
+	//初始化游戏
+	Game.init();
+</script>
